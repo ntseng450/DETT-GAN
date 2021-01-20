@@ -1,16 +1,21 @@
+# Modified dataloader adapted from CUT-GAN's dataloading
 from natsort import natsorted
 from PIL import Image
 from pathlib import Path
+from utils.data_transforms import get_transform
 import torch.utils.data
 import matplotlib.pyplot as plt
 import os
+import random
 import numpy as np
 
-class domain_dataloader():
+
+class multiscale_dataloader():
     def __init__(self, opt):
         self.opt = opt
         self.input_root = Path(opt.input_dir)
         self.scale_dirs = [self.input_root / Path("original")]
+        self.scale_curr = 1
 
         initialized = create_scales(self.input_root, self.scale_dirs, opt)
         if not initialized:
@@ -19,6 +24,28 @@ class domain_dataloader():
                 path = self.scale_dirs[0] / Path("trainB") / Path(item)
                 create_scaled_variants(path, self.scale_dirs, opt)
 
+        self.scale_A = get_scale_images("A", self.scale_dirs, self.scale_curr)
+        self.scale_B = get_scale_images("B", self.scale_dirs, self.scale_curr)
+        self.A_size = len(self.scale_A)
+        self.B_size = len(self.scale_B)
+
+    def __getitem__(self, index):
+        A_path = self.scale_A[index % self.A_size]
+        if self.opt.serial_batches:
+            index_B = index % self.B_size
+        else:
+            index_B = random.randint(0, self.B_size - 1)
+        B_path = self.scale_B[index_B]
+        A_img = Image.open(A_path).convert('RGB')
+        B_img = Image.open(B_path).convert('RGB')
+        transform = get_transform(self.opt)
+        A = transform(A_img)
+        B = transform(B_img)
+
+        return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
+
+    def __len__(self):
+        return max(self.A_size, self.B_size)
 
 
 def create_scales(input_root, scale_dirs, opt):
@@ -46,3 +73,23 @@ def create_scaled_variants(path, scale_dirs, opt):
                 output_path = dir / Path("trainB") / os.path.basename(path)
                 im.save(output_path)
                 scale_res *= opt.scale_factor
+
+
+def get_scale_images(domain, scale_dirs, scale):
+    domain_path = "train{}".format(domain)
+    data_dir = scale_dirs[scale] / Path(domain_path)
+    instances = []
+    for root, _, fnames in sorted(os.walk(target_dir, followlinks=True)):
+        for fname in sorted(fnames):
+            path = os.path.join(root, fname)
+            if is_valid_file(path):
+                instances.append(path)
+    return instances
+
+
+def transform_noise(img, noise_mult):
+    # 1 or opt.batch_size for how many noise masks to generate
+    noise_shape = (1, opt.num_channels, img.size[0], img.size[1])
+    gaussian_noise = torch.randn(noise_shape)
+    gaussian_noise = gaussian_noise * noise_mult.expand_as(guassian_noise)
+    return img + gaussian_noise

@@ -8,6 +8,7 @@ import torch.utils.data as data
 from PIL import Image
 import torchvision.transforms as transforms
 from abc import ABC, abstractmethod
+from utils.dataloader import transform_noise
 
 def get_params(opt, size):
     w, h = size
@@ -76,6 +77,7 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
             transform_list += [transforms.Normalize((0.5,), (0.5,))]
         else:
             transform_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
+        transfrom_list.append(transforms.Lambda(lambda img: transform_noise(img, opt.noise_mult)))
     return transforms.Compose(transform_list)
 
 

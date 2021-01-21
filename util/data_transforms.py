@@ -8,7 +8,18 @@ import torch.utils.data as data
 from PIL import Image
 import torchvision.transforms as transforms
 from abc import ABC, abstractmethod
-from utils.dataloader import transform_noise
+import torch
+
+
+def transform_noise(opt, img, noise_mult):
+    # 1 or opt.batch_size for how many noise masks to generate
+    print(img.size())
+    noise_shape = (opt.num_channels, img.size()[1], img.size()[2])
+    gaussian_noise = torch.randn(noise_shape)
+    gaussian_noise = noise_mult * gaussian_noise
+    print(gaussian_noise.size())
+    return img + gaussian_noise
+
 
 def get_params(opt, size):
     w, h = size
@@ -77,7 +88,7 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
             transform_list += [transforms.Normalize((0.5,), (0.5,))]
         else:
             transform_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-        transfrom_list.append(transforms.Lambda(lambda img: transform_noise(img, opt.noise_mult)))
+        transform_list.append(transforms.Lambda(lambda img: transform_noise(opt, img, opt.noise_mult)))
     return transforms.Compose(transform_list)
 
 

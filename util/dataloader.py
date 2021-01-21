@@ -2,7 +2,7 @@
 from natsort import natsorted
 from PIL import Image
 from pathlib import Path
-from utils.data_transforms import get_transform
+from util.data_transforms import get_transform
 import torch.utils.data
 import matplotlib.pyplot as plt
 import os
@@ -22,7 +22,11 @@ class multiscale_dataloader():
             source_B = natsorted(os.listdir(self.scale_dirs[0] / Path("trainB")))
             for item in source_B:
                 path = self.scale_dirs[0] / Path("trainB") / Path(item)
-                create_scaled_variants(path, self.scale_dirs, opt)
+                create_scaled_variants(path, "B", self.scale_dirs, opt)
+            source_A = natsorted(os.listdir(self.scale_dirs[0] / Path("trainA")))
+            for item in source_A:
+                path = self.scale_dirs[0] / Path("trainA") / Path(item)
+                create_scaled_variants(path, "A", self.scale_dirs[:2], opt)
 
         self.scale_A = get_scale_images("A", self.scale_dirs, self.scale_curr)
         self.scale_B = get_scale_images("B", self.scale_dirs, self.scale_curr)
@@ -47,6 +51,11 @@ class multiscale_dataloader():
     def __len__(self):
         return max(self.A_size, self.B_size)
 
+    def increment_scale(self):
+        self.scale_curr += 1
+        self.scale_A = get_scale_images("A", self.scale_dirs, self.scale_curr)
+        self.scale_B = get_scale_images("B", self.scale_dirs, self.scale_curr)
+
 
 def create_scales(input_root, scale_dirs, opt):
     initialized = True
@@ -63,14 +72,14 @@ def create_scales(input_root, scale_dirs, opt):
     return initialized
 
 
-def create_scaled_variants(path, scale_dirs, opt):
+def create_scaled_variants(path, domain, scale_dirs, opt):
     if os.path.isfile(str(path)):
         original = Image.open(str(path)).convert("RGB")
         scale_res = opt.base_resolution
         for scale, dir in enumerate(scale_dirs):
             if scale != 0:
                 im = original.resize((scale_res, scale_res), Image.ANTIALIAS)
-                output_path = dir / Path("trainB") / os.path.basename(path)
+                output_path = dir / Path("train{}".format(domain)) / os.path.basename(path)
                 im.save(output_path)
                 scale_res *= opt.scale_factor
 
@@ -79,17 +88,10 @@ def get_scale_images(domain, scale_dirs, scale):
     domain_path = "train{}".format(domain)
     data_dir = scale_dirs[scale] / Path(domain_path)
     instances = []
-    for root, _, fnames in sorted(os.walk(target_dir, followlinks=True)):
+    for root, _, fnames in sorted(os.walk(data_dir, followlinks=True)):
         for fname in sorted(fnames):
             path = os.path.join(root, fname)
-            if is_valid_file(path):
+            if os.path.isfile(path):
                 instances.append(path)
     return instances
 
-
-def transform_noise(img, noise_mult):
-    # 1 or opt.batch_size for how many noise masks to generate
-    noise_shape = (1, opt.num_channels, img.size[0], img.size[1])
-    gaussian_noise = torch.randn(noise_shape)
-    gaussian_noise = gaussian_noise * noise_mult.expand_as(guassian_noise)
-    return img + gaussian_noise

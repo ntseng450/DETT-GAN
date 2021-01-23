@@ -13,11 +13,9 @@ import torch
 
 def transform_noise(opt, img, noise_mult):
     # 1 or opt.batch_size for how many noise masks to generate
-    print(img.size())
     noise_shape = (opt.num_channels, img.size()[1], img.size()[2])
     gaussian_noise = torch.randn(noise_shape)
     gaussian_noise = noise_mult * gaussian_noise
-    print(gaussian_noise.size())
     return img + gaussian_noise
 
 
@@ -88,7 +86,8 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
             transform_list += [transforms.Normalize((0.5,), (0.5,))]
         else:
             transform_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-        transform_list.append(transforms.Lambda(lambda img: transform_noise(opt, img, opt.noise_mult)))
+        if opt.add_noise:
+            transform_list.append(transforms.Lambda(lambda img: transform_noise(opt, img, opt.noise_mult)))
     return transforms.Compose(transform_list)
 
 

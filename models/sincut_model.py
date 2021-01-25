@@ -18,8 +18,7 @@ class SinCUTModel(CUTModel):
                             help='the "identity preservation loss"')
 
         parser.set_defaults(nce_includes_all_negatives_from_minibatch=True,
-                            # dataset_mode="singleimage",
-                            dataset_mode="unaligned",
+                            dataset_mode="singleimage",
                             netG="stylegan2",
                             stylegan2_G_num_downsampling=1,
                             netD="stylegan2",

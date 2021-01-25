@@ -27,6 +27,7 @@ class multiscale_dataloader():
             for item in source_A:
                 path = self.scale_dirs[0] / Path("trainA") / Path(item)
                 create_scaled_variants(path, "A", self.scale_dirs[:2], opt)
+                create_scaled_variants(path, "C", self.scale_dirs, opt)
 
         self.scale_A = get_scale_images("A", self.scale_dirs, self.scale_curr)
         self.scale_B = get_scale_images("B", self.scale_dirs, self.scale_curr)
@@ -42,11 +43,17 @@ class multiscale_dataloader():
         B_path = self.scale_B[index_B]
         A_img = Image.open(A_path).convert('RGB')
         B_img = Image.open(B_path).convert('RGB')
-        transform = get_transform(self.opt)
-        A = transform(A_img)
-        B = transform(B_img)
+        transformA = get_transform(self.opt, params='flip')
+        transformB = get_transform(self.opt, params='flip')
+        A = transformA(A_img)
+        B = transformB(B_img)
+        dirs = A_path.split(os.sep)
+        dirs[-2] = "trainC"
+        C_path = os.path.join(*dirs)
+        C_img = Image.open(C_path).convert('RGB')
+        C = transformA(C_img)
 
-        return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path}
+        return {'A': A, 'B': B, 'A_paths': A_path, 'B_paths': B_path, 'orig': C}
 
     def __len__(self):
         return max(self.A_size, self.B_size)
@@ -55,6 +62,9 @@ class multiscale_dataloader():
         self.scale_curr += 1
         self.scale_A = get_scale_images("A", self.scale_dirs, self.scale_curr)
         self.scale_B = get_scale_images("B", self.scale_dirs, self.scale_curr)
+
+    def get_current_scale(self):
+        return self.scale_curr
 
 
 def create_scales(input_root, scale_dirs, opt):
@@ -68,6 +78,8 @@ def create_scales(input_root, scale_dirs, opt):
             dir_A.mkdir(parents=True, exist_ok=True)
             dir_B = output_scale_dir / Path("trainB")
             dir_B.mkdir(parents=True, exist_ok=True)
+            dir_orig = output_scale_dir / Path("trainC")
+            dir_orig.mkdir(parents=True, exist_ok=True)
         scale_dirs.append(output_scale_dir)
     return initialized
 
@@ -82,6 +94,7 @@ def create_scaled_variants(path, domain, scale_dirs, opt):
                 output_path = dir / Path("train{}".format(domain)) / os.path.basename(path)
                 im.save(output_path)
                 scale_res *= opt.scale_factor
+
 
 
 def get_scale_images(domain, scale_dirs, scale):

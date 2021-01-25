@@ -104,7 +104,7 @@ class BaseModel(ABC):
         for name in self.model_names:
             if isinstance(name, str):
                 net = getattr(self, 'net' + name)
-                setattr(self, 'net' + name, torch.nn.DataParallel(net, self.opt.gpu_ids))
+                setattr(self, 'net' + name, torch.nn.DataParallel(net, self.gpu_ids))
 
     def data_dependent_initialize(self, data):
         pass

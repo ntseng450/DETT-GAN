@@ -34,7 +34,7 @@ def get_params(opt, size):
 
     flip = random.random() > 0.5
 
-    return {'crop_pos': (x, y), 'flip': flip}
+    return {    'crop_pos': (x, y), 'flip': flip}
 
 
 def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, convert=True):
@@ -78,7 +78,9 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
         if params is None or 'flip' not in params:
             transform_list.append(transforms.RandomHorizontalFlip())
         elif 'flip' in params:
-            transform_list.append(transforms.Lambda(lambda img: __flip(img, params['flip'])))
+            # if A is flipped, make sure C is flipped also
+            if random.random() > 0.5:
+                transform_list.append(transforms.Lambda(lambda img: __flip(img, True)))
 
     if convert:
         transform_list += [transforms.ToTensor()]
@@ -86,7 +88,7 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
             transform_list += [transforms.Normalize((0.5,), (0.5,))]
         else:
             transform_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-        if opt.add_noise:
+        if 'noise' in opt.preprocess:
             transform_list.append(transforms.Lambda(lambda img: transform_noise(opt, img, opt.noise_mult)))
     return transforms.Compose(transform_list)
 

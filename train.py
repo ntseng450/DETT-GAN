@@ -22,8 +22,8 @@ def train_layer(opt, dataloader, dataset):
             model.set_input(data)
             model.optimize_parameters()
 
-            # if total_iters % opt.visuals_snapshots == 0:
-            if total_iters % 99 == 0:
+            if total_iters % opt.visuals_snapshots == 0:
+            # if total_iters % 99 == 0:
                 model.compute_visuals()
                 save_snapshot_visual(model.get_current_visuals(), epoch, i)
 

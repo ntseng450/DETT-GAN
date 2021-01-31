@@ -10,7 +10,7 @@ from util import util
 
 def train_layer(opt, dataloader, dataset):
     # scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, threshold=0.01, patience=5)
-    model = create_model(opt)
+    model = create_model(opt, dataset.get_current_scale())
     total_iters = 0
     for epoch in range(opt.start_epoch, opt.num_epochs + 1):
         for i, data in enumerate(dataloader):
@@ -31,13 +31,13 @@ def train_layer(opt, dataloader, dataset):
             losses = model.get_current_losses()
             print_current_losses(epoch, 0, losses, 1, 1)
     model.save_networks(dataset.get_current_scale())
-    if dataset.get_current_scale != opt.num_scales - 1:
+    if dataset.get_current_scale() != opt.num_scales:
         generate_next_scale(opt, model, dataset)
+        dataset.increment_scale()
 
 
 def generate_next_scale(opt, model, dataset):
     dataset.opt.serial_batches = True
-    print(dataset.opt.serial_batches)
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=opt.batch_size,
@@ -76,7 +76,5 @@ if __name__ == '__main__':
 
 
     # add for loop for scales
-    for scale in range(opt.num_scales):
-        # set_scale_opt() TO IMPLEMENT
+    for scale in range(0, opt.num_scales):
         train_layer(opt, dataloader, dataset)
-        dataset.increment_scale()

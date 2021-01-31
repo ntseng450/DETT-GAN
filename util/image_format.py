@@ -9,7 +9,6 @@ import matplotlib.pyplot as plt
 def save_scaled(opt, fakeB, datapath, scale):
     scaling = opt.scale_factor ** scale
     target_res = opt.base_resolution * scaling
-    print(target_res)
     image_B = Image.fromarray(tensor2im(fakeB))
     scaled_B = image_B.resize((target_res, target_res), Image.ANTIALIAS)
     filename = os.path.basename(datapath[0])
@@ -19,7 +18,7 @@ def save_scaled(opt, fakeB, datapath, scale):
 
 def save_snapshot_visual(visuals, epoch, i):
     fig = plt.figure()
-    ncols = 4
+    ncols = 5
     if ncols > 0:
         ncols = min(ncols, len(visuals))
         idx = 0

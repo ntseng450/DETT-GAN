@@ -28,6 +28,7 @@ def train_layer(opt, dataloader, dataset):
                 save_snapshot_visual(model.get_current_visuals(), epoch, i,
                                      opt.snapshot_dir, dataset.get_current_scale())
 
+        model.update_learning_rate()  
         if epoch % opt.print_freq == 0:
             losses = model.get_current_losses()
             print_current_losses(epoch, 0, losses, 1, 1)

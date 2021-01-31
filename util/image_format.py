@@ -16,7 +16,11 @@ def save_scaled(opt, fakeB, datapath, scale):
     scaled_B.save(save_path)
 
 
-def save_snapshot_visual(visuals, epoch, i):
+def save_snapshot_visual(visuals, epoch, i, snapshot_dir, scale_num):
+    output_dir = Path(snapshot_dir)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    scale_dir = output_dir / Path("scale-{}".format(scale_num))
+    scale_dir.mkdir(parents=True, exist_ok=True)
     fig = plt.figure()
     ncols = 5
     if ncols > 0:
@@ -28,7 +32,8 @@ def save_snapshot_visual(visuals, epoch, i):
             subplot_fig.set_title(label)
             idx += 1
             plt.imshow(image_numpy)
-        plt.savefig("created/epoch"+str(epoch)+"img"+str(i)+".png")
+        path = scale_dir / Path("epoch{}_iter{}.png".format(epoch, i))
+        plt.savefig(path)
         plt.close()
 
 

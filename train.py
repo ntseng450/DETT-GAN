@@ -25,7 +25,8 @@ def train_layer(opt, dataloader, dataset):
             if total_iters % opt.visuals_snapshots == 0:
             # if total_iters % 99 == 0:
                 model.compute_visuals()
-                save_snapshot_visual(model.get_current_visuals(), epoch, i)
+                save_snapshot_visual(model.get_current_visuals(), epoch, i,
+                                     opt.snapshot_dir, dataset.get_current_scale())
 
         if epoch % opt.print_freq == 0:
             losses = model.get_current_losses()

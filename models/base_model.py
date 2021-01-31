@@ -3,6 +3,7 @@ import torch
 from collections import OrderedDict
 from abc import ABC, abstractmethod
 from . import networks
+from pathlib import Path
 
 
 class BaseModel(ABC):
@@ -42,6 +43,8 @@ class BaseModel(ABC):
         self.optimizers = []
         self.image_paths = []
         self.metric = 0  # used for learning rate policy 'plateau'
+        Path(self.save_dir).mkdir(parents=True, exist_ok=True)
+
 
     @staticmethod
     def dict_grad_hook_factory(add_func=lambda x: x):

@@ -5,7 +5,7 @@ def load_args():
     arg_parser = argparse.ArgumentParser()
 
     # Dataloader params
-    arg_parser.add_argument('--input_dir', default='datasets/road2icy')
+    arg_parser.add_argument('--input_dir', default='datasets/few_mixed2icy')
     arg_parser.add_argument('--num_channels', default=3, type=int)
     arg_parser.add_argument('--num_scales', default=3, type=int)
     arg_parser.add_argument('--scale_factor', default=2, type=int)
@@ -101,6 +101,7 @@ def load_args():
     arg_parser.add_argument('--num_epochs', default=5, type=int)
     arg_parser.add_argument('--visuals_snapshots', default=10, type=int)
     arg_parser.add_argument('--print_freq', default=1, type=int)
+    arg_parser.add_argument('--snapshot_dir', type=str, default="snapshots")
 
 
     # Testing Params

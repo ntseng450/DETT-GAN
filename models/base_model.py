@@ -89,7 +89,7 @@ class BaseModel(ABC):
         """Calculate losses, gradients, and update network weights; called in every training iteration"""
         pass
 
-    def setup(self, opt):
+    def setup(self, opt, scale):
         """Load and print networks; create schedulers
 
         Parameters:
@@ -98,8 +98,9 @@ class BaseModel(ABC):
         if self.isTrain:
             self.schedulers = [networks.get_scheduler(optimizer, opt) for optimizer in self.optimizers]
         if not self.isTrain or opt.continue_train:
-            load_suffix = opt.epoch
+            load_suffix = scale
             self.load_networks(load_suffix)
+            print("network loaded")
 
         self.print_networks(opt.verbose)
 
@@ -146,7 +147,7 @@ class BaseModel(ABC):
                 scheduler.step()
 
         lr = self.optimizers[0].param_groups[0]['lr']
-        print('learning rate = %.7f' % lr)
+        # print('learning rate = %.7f' % lr)
 
     def get_current_visuals(self):
         """Return visualization images. train.py will display these images with visdom, and save the images to a HTML"""
@@ -196,7 +197,7 @@ class BaseModel(ABC):
         else:
             self.__patch_instance_norm_state_dict(state_dict, getattr(module, key), keys, i + 1)
 
-    def load_networks(self, epoch):
+    def load_networks(self, scale):
         """Load all the networks from the disk.
 
         Parameters:
@@ -204,7 +205,7 @@ class BaseModel(ABC):
         """
         for name in self.model_names:
             if isinstance(name, str):
-                load_filename = '%s_net_%s.pth' % (epoch, name)
+                load_filename = '%s_net_%s.pth' % (scale, name)
                 if self.opt.isTrain and self.opt.pretrained_name is not None:
                     load_dir = os.path.join(self.opt.checkpoints_dir, self.opt.pretrained_name)
                 else:

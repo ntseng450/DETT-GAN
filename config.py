@@ -13,7 +13,7 @@ def load_args():
     arg_parser.add_argument('--num_threads', default=4, type=int)
     arg_parser.add_argument('--batch_size', default=1, type=int)
     arg_parser.add_argument('--serial_batches', action='store_true')
-    arg_parser.add_argument('--preprocess', type=str, default='none')
+    arg_parser.add_argument('--preprocess', type=str, default='resize_crop_noise')
     arg_parser.add_argument('--noise_mult', default=0.15, type=float)
     arg_parser.add_argument('--no_flip', action='store_true')
     arg_parser.add_argument('--gpu_ids', type=str, default='0', help='gpu ids: e.g. 0  0,1,2, 0,2. use -1 for CPU')
@@ -102,11 +102,12 @@ def load_args():
     arg_parser.add_argument('--visuals_snapshots', default=10, type=int)
     arg_parser.add_argument('--print_freq', default=1, type=int)
     arg_parser.add_argument('--snapshot_dir', type=str, default="snapshots")
-
+    arg_parser.add_argument('--load_multiplier', default=1.15, type=float)
 
     # Testing Params
     arg_parser.add_argument('--is_test', action='store_true')
     arg_parser.add_argument('--isTrain', type=util.str2bool, nargs='?', const=True, default=True)
+    arg_parser.add_argument('--generate_dir', type=str, default="generated")
 
     return arg_parser
 

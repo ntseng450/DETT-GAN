@@ -2,7 +2,7 @@
 from natsort import natsorted
 from PIL import Image
 from pathlib import Path
-from util.data_transforms import get_transform
+from util.data_transforms import get_transform, get_noise
 import torch.utils.data
 import matplotlib.pyplot as plt
 import os
@@ -35,6 +35,7 @@ class multiscale_dataloader():
         self.B_size = len(self.scale_B)
 
     def __getitem__(self, index):
+        # Get image paths and load in image matrix
         A_path = self.scale_A[index % self.A_size]
         if self.opt.serial_batches:
             index_B = index % self.B_size
@@ -43,9 +44,17 @@ class multiscale_dataloader():
         B_path = self.scale_B[index_B]
         A_img = Image.open(A_path).convert('RGB')
         B_img = Image.open(B_path).convert('RGB')
-        transformA = get_transform(self.opt, params='flip')
-        transformB = get_transform(self.opt, params='flip')
+        # Calculate random crop positions: 1 shared by A and C, and 1 for B
+        crop_size = self.opt.base_resolution * (self.opt.scale_factor ** (self.scale_curr-1))
+        load_size = int(crop_size * self.opt.load_multiplier)
+        random_posA = [np.random.randint(load_size - crop_size + 1), np.random.randint(load_size - crop_size + 1)]
+        random_posB = [np.random.randint(load_size - crop_size + 1), np.random.randint(load_size - crop_size + 1)]
+        # Grab transform with parameters
+        transformA = get_transform(self.opt, params={'flip': 1, 'crop_pos':random_posA,'crop_size': crop_size, 'load_size': load_size})
+        transformB = get_transform(self.opt, params={'flip': 1, 'crop_pos':random_posB, 'crop_size': crop_size, 'load_size': load_size})
+        noiseA = get_noise(self.opt)
         A = transformA(A_img)
+        A = noiseA(A)
         B = transformB(B_img)
         dirs = A_path.split(os.sep)
         dirs[-2] = "trainC"

@@ -52,7 +52,7 @@ class ScaleDiscriminator(nn.Module):
                 sequence += [nn.Conv2d(ndf, ndf * 2, kernel_size=kw, stride=1, padding=padw, bias=use_bias),
                             norm_layer(ndf * 2),
                             nn.LeakyReLU(0.2, True),
-                            Downsample(ndf * 2)]
+                            Downsample(ndf * 2)]    
             sequence += [nn.Conv2d(ndf * 2, 1, kernel_size=kw, stride=1, padding=padw)]
             self.model = nn.Sequential(*sequence)
         elif netD == "medium":

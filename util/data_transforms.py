@@ -19,6 +19,13 @@ def transform_noise(opt, img, noise_mult):
     return img + gaussian_noise
 
 
+def get_noise(opt):
+    transform_list = []
+    if 'noise' in opt.preprocess:
+        transform_list.append(transforms.Lambda(lambda img: transform_noise(opt, img, opt.noise_mult)))
+    return transforms.Compose(transform_list)
+
+
 def get_params(opt, size):
     w, h = size
     new_h = h
@@ -44,9 +51,12 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
     if 'fixsize' in opt.preprocess:
         transform_list.append(transforms.Resize(params["size"], method))
     if 'resize' in opt.preprocess:
-        osize = [opt.load_size, opt.load_size]
-        if "gta2cityscapes" in opt.dataroot:
-            osize[0] = opt.load_size // 2
+        if params is None:
+            osize = [opt.load_size, opt.load_size]
+        else:
+            osize = [params["load_size"], params["load_size"]]
+        # if "gta2cityscapes" in opt.dataroot:
+        #     osize[0] = opt.load_size // 2
         transform_list.append(transforms.Resize(osize, method))
     elif 'scale_width' in opt.preprocess:
         transform_list.append(transforms.Lambda(lambda img: __scale_width(img, opt.load_size, opt.crop_size, method)))
@@ -63,7 +73,7 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
         if params is None or 'crop_pos' not in params:
             transform_list.append(transforms.RandomCrop(opt.crop_size))
         else:
-            transform_list.append(transforms.Lambda(lambda img: __crop(img, params['crop_pos'], opt.crop_size)))
+            transform_list.append(transforms.Lambda(lambda img: __crop(img, params['crop_pos'], params['crop_size'])))
 
     if 'patch' in opt.preprocess:
         transform_list.append(transforms.Lambda(lambda img: __patch(img, params['patch_index'], opt.crop_size)))
@@ -88,8 +98,6 @@ def get_transform(opt, params=None, grayscale=False, method=Image.BICUBIC, conve
             transform_list += [transforms.Normalize((0.5,), (0.5,))]
         else:
             transform_list += [transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))]
-        if 'noise' in opt.preprocess:
-            transform_list.append(transforms.Lambda(lambda img: transform_noise(opt, img, opt.noise_mult)))
     return transforms.Compose(transform_list)
 
 

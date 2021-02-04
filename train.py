@@ -17,7 +17,7 @@ def train_layer(opt, dataloader, dataset):
             total_iters += opt.batch_size
             if epoch == opt.start_epoch and i == 0:
                 model.data_dependent_initialize(data)
-                model.setup(opt)
+                model.setup(opt, None)
                 model.parallelize()
             model.set_input(data)
             model.optimize_parameters()

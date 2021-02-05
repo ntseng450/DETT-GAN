@@ -54,7 +54,8 @@ def generate_next_scale(opt, model, dataset):
         model.eval()
         model.test()
         fake_B = model.get_current_visuals()["fake_B"]
-        save_scaled(opt, fake_B, data["A_paths"], scale)
+        orig_A = model.get_current_visuals()["original_A"]
+        save_scaled(opt, fake_B, orig_A, data["A_paths"], scale)
 
     dataset.opt.serial_batches = False
 

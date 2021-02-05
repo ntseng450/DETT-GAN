@@ -21,6 +21,8 @@ def load_args():
 
     # Scale params
     arg_parser.add_argument('--model_types', type=str, default='coarse,medium,fine')
+    arg_parser.add_argument('--combine_outputs', type=float, default=0.0)
+    arg_parser.add_argument('--condition_original', action='store_true')
 
     # CUT params
     arg_parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')

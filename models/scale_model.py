@@ -119,7 +119,14 @@ class ScaleModel(BaseModel):
 
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>."""
-        self.real = torch.cat((self.input_A, self.real_B), dim=0) if self.opt.nce_idt and self.opt.isTrain else self.input_A
+        if self.opt.nce_idt and self.opt.isTrain:
+            if self.opt.condition_original:
+                self.real = torch.cat((self.input_A, self.real_B, self.original_A), dim=0)
+            else:
+                self.real = torch.cat((self.input_A, self.real_B), dim=0)
+        else:
+            self.real = self.input_A
+        # self.real = torch.cat((self.input_A, self.real_B), dim=0) if self.opt.nce_idt and self.opt.isTrain else self.input_A
         if self.opt.flip_equivariance:
             self.flipped_for_equivariance = self.opt.isTrain and (np.random.random() < 0.5)
             if self.flipped_for_equivariance:
@@ -127,8 +134,11 @@ class ScaleModel(BaseModel):
 
         self.fake = self.netG(self.real)
         self.fake_B = self.fake[:self.input_A.size(0)]
-        if self.opt.nce_idt:
+        if self.opt.nce_idt and not self.opt.condition_original:
             self.idt_B = self.fake[self.input_A.size(0):]
+        if self.opt.nce_idt and self.opt.condition_original:
+            self.idt_B = self.fake[self.input_A.size(0):2]
+            self.idt_A = self.fake[2:]
 
     def compute_D_loss(self):
         """Calculate GAN loss for the discriminator"""
@@ -163,9 +173,14 @@ class ScaleModel(BaseModel):
 
         if self.opt.nce_idt and self.opt.lambda_NCE > 0.0:
             self.loss_NCE_Y = self.calculate_NCE_loss(self.real_B, self.idt_B)
-            loss_NCE_both = (self.loss_NCE + self.loss_NCE_Y) * 0.5
+            loss_NCE_both = (self.loss_NCE + self.loss_NCE_Y)
+            if self.opt.condition_original:
+                self.loss_NCE_original = self.calculate_NCE_loss(self.original_A, self.idt_A)
+                loss_NCE_total = (loss_NCE_both + self.loss_NCE_original) / 3
+            else:
+                loss_NCE_total = loss_NCE_both * 0.5
         else:
-            loss_NCE_both = self.loss_NCE
+            loss_NCE_total = self.loss_NCE
 
         # Calculate content preservation loss
         if self.opt.lambda_SSIM > 0.0:
@@ -179,7 +194,7 @@ class ScaleModel(BaseModel):
             self.loss_RMSE = 0.0
 
         # Calculate objective loss function
-        self.loss_G = self.loss_G_GAN + loss_NCE_both + self.loss_SSIM + self.loss_RMSE
+        self.loss_G = self.loss_G_GAN + loss_NCE_total + self.loss_SSIM + self.loss_RMSE
         return self.loss_G
 
     def calculate_NCE_loss(self, src, tgt):

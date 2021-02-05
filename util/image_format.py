@@ -6,9 +6,13 @@ from pathlib import Path
 import os
 import matplotlib.pyplot as plt
 
-def save_scaled(opt, fakeB, datapath, scale):
+def save_scaled(opt, fakeB, origA, datapath, scale):
+    # Calculate scale amounts
     scaling = opt.scale_factor ** scale
     target_res = opt.base_resolution * scaling
+    # Combine outputs if specified
+    if 0 < opt.combine_outputs and opt.combine_outputs < 1:
+        fakeB = (opt.combine_outputs * fakeB) + ((1-opt.combine_outputs) * origA)
     image_B = Image.fromarray(tensor2im(fakeB))
     scaled_B = image_B.resize((target_res, target_res), Image.ANTIALIAS)
     filename = os.path.basename(datapath[0])

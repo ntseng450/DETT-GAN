@@ -38,12 +38,15 @@ class ScaleModel(BaseModel):
         model_specs = opt.model_types.split(',')
         scale_idx = scale - 1
         if model_specs[scale_idx] == "coarse":
+            self.n_blocks = 4
             self.netG = networks.define_G(opt.input_nc, opt.output_nc, 32, 'resnet_4blocks', opt.normG, not opt.no_dropout, 
             opt.init_type, opt.init_gain, opt.no_antialias, opt.no_antialias_up, self.gpu_ids, opt)
         elif model_specs[scale_idx] == "medium":
+            self.n_blocks = 6
             self.netG = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, 'resnet_6blocks', opt.normG, not opt.no_dropout, 
             opt.init_type, opt.init_gain, opt.no_antialias, opt.no_antialias_up, self.gpu_ids, opt)
         else:
+            self.n_blocks = 9
             self.netG = networks.define_G(opt.input_nc, opt.output_nc, opt.ngf, opt.netG, opt.normG, not opt.no_dropout, opt.init_type, opt.init_gain, opt.no_antialias, opt.no_antialias_up, self.gpu_ids, opt)
         self.netF = networks.define_F(opt.input_nc, opt.netF, opt.normG, not opt.no_dropout, opt.init_type, opt.init_gain, opt.no_antialias, self.gpu_ids, opt)
 
@@ -116,7 +119,6 @@ class ScaleModel(BaseModel):
         self.original_A = input['orig'].to(self.device)
         self.image_paths = input['A_paths']
 
-
     def forward(self):
         """Run forward pass; called by both functions <optimize_parameters> and <test>."""
         if self.opt.nce_idt and self.opt.isTrain:
@@ -132,13 +134,23 @@ class ScaleModel(BaseModel):
             if self.flipped_for_equivariance:
                 self.real = torch.flip(self.real, [3])
 
-        self.fake = self.netG(self.real)
+        if self.opt.latent_addition == 0:
+            self.fake = self.netG(self.real)
+        else:
+            encode_A = self.netG(self.real, [11+self.n_blocks], encode_only=True)[0]
+            encode_orig = self.netG(self.original_A, [11+self.n_blocks], encode_only=True)[0]
+            if isinstance(self.netG, nn.DataParallel):
+                self.fake = self.netG.module.decode(encode_A, encode_orig)
+            else:
+                self.fake = self.netG.decode(encode_A, encode_orig)
+
         self.fake_B = self.fake[:self.input_A.size(0)]
         if self.opt.nce_idt and not self.opt.condition_original:
             self.idt_B = self.fake[self.input_A.size(0):]
         if self.opt.nce_idt and self.opt.condition_original:
             self.idt_B = self.fake[self.input_A.size(0):2]
             self.idt_A = self.fake[2:]
+
 
     def compute_D_loss(self):
         """Calculate GAN loss for the discriminator"""

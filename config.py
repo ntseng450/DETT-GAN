@@ -23,6 +23,7 @@ def load_args():
     arg_parser.add_argument('--model_types', type=str, default='coarse,medium,fine')
     arg_parser.add_argument('--combine_outputs', type=float, default=0.0)
     arg_parser.add_argument('--condition_original', action='store_true')
+    arg_parser.add_argument('--latent_addition', type=float, default=0.0)
 
     # CUT params
     arg_parser.add_argument('--checkpoints_dir', type=str, default='./checkpoints', help='models are saved here')

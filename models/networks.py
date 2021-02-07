@@ -1021,6 +1021,9 @@ class ResnetGenerator(nn.Module):
         else:
             use_bias = norm_layer == nn.InstanceNorm2d
 
+        # added
+        self.upsample_idx = 11+n_blocks
+
         model = [nn.ReflectionPad2d(3),
                  nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0, bias=use_bias),
                  norm_layer(ngf),
@@ -1091,6 +1094,14 @@ class ResnetGenerator(nn.Module):
             """Standard forward"""
             fake = self.model(input)
             return fake
+    
+    def decode(self, input_A, orig_A):
+        input_A[0] = self.opt.latent_addition * input_A[0] + (1-self.opt.latent_addition) * orig_A
+        feat = input_A
+        for layer_id, layer in enumerate(self.model):
+            if layer_id > self.upsample_idx:
+                feat = layer(feat)
+        return feat
 
 
 class ResnetDecoder(nn.Module):

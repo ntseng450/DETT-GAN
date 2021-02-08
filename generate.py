@@ -49,7 +49,8 @@ if __name__ == '__main__':
     opt.batch_size = 1
     opt.no_flip = True
     opt.isTrain = False
-    opt.preprocess = ""
+    if opt.preprocess == "none":
+        opt.preprocess = ""
     dataset = multiscale_dataloader(opt)
     dataloader = torch.utils.data.DataLoader(
         dataset,

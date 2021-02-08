@@ -20,7 +20,7 @@ def generate_layer(opt, dataloader, dataset):
         model.test()
         fake_B = model.get_current_visuals()["fake_B"]
         if dataset.get_current_scale() != opt.num_scales:
-            save_scaled(opt, fake_B, data["A_paths"], dataset.get_current_scale())
+            save_scaled(opt, fake_B, model.get_current_visuals()["original_A"], data["A_paths"], dataset.get_current_scale())
             dataset.increment_scale()
         else:
             save_final(opt, fake_B, data["A_paths"])

@@ -21,9 +21,10 @@ def generate_layer(opt, dataloader, dataset):
         fake_B = model.get_current_visuals()["fake_B"]
         if dataset.get_current_scale() != opt.num_scales:
             save_scaled(opt, fake_B, model.get_current_visuals()["original_A"], data["A_paths"], dataset.get_current_scale())
-            dataset.increment_scale()
         else:
             save_final(opt, fake_B, data["A_paths"])
+    if dataset.get_current_scale() != opt.num_scales:
+        dataset.increment_scale()
 
 
 def save_final(opt, fake_B, A_path):
@@ -48,6 +49,7 @@ if __name__ == '__main__':
     opt.batch_size = 1
     opt.no_flip = True
     opt.isTrain = False
+    opt.preprocess = ""
     dataset = multiscale_dataloader(opt)
     dataloader = torch.utils.data.DataLoader(
         dataset,

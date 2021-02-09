@@ -7,7 +7,7 @@ import shutil
 def load_args():
     arg_parser = argparse.ArgumentParser()
 
-    arg_parser.add_argument('--input_dir', default='cmvid2icy/')
+    arg_parser.add_argument('--input_dir', default='cmvid2icy')
     arg_parser.add_argument('--create_original', action='store_true')
     arg_parser.add_argument('--size', type=int, default=150)
 
@@ -27,7 +27,7 @@ if __name__ == '__main__':
     print(num_files)
 
     if opt.create_original:
-        output_dir = Path(opt.input_dir+ "_"+ str.opt.size) / Path("original")
+        output_dir = Path(opt.input_dir+ "_" + str.opt.size) / Path("original")
     else:
         output_dir = Path(opt.input_dir + "_" + str(opt.size))
     output_dir.mkdir(parents=True, exist_ok=True)
@@ -40,7 +40,7 @@ if __name__ == '__main__':
             if counter in random_indices:
                 curr_path = os.path.join(root, fname)
                 new_path = output_dir / Path("trainA") / fname
-                shutil.move(curr_path, new_path)
+                shutil.copy(curr_path, new_path)
             counter += 1
 
     # Get domain B
@@ -65,5 +65,5 @@ if __name__ == '__main__':
             if counter in random_indices:
                 curr_path = os.path.join(root, fname)
                 new_path = output_dir / Path("trainB") / fname
-                shutil.move(curr_path, new_path)
+                shutil.copy(curr_path, new_path)
             counter += 1

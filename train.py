@@ -40,6 +40,9 @@ def train_layer(opt, dataloader, dataset):
 
 def generate_next_scale(opt, model, dataset):
     dataset.opt.serial_batches = True
+    dataset.opt.no_flip = True
+    preprocessing = dataset.opt.preprocess
+    dataset.opt.preprocess = ""
     dataloader = torch.utils.data.DataLoader(
         dataset,
         batch_size=opt.batch_size,
@@ -58,6 +61,8 @@ def generate_next_scale(opt, model, dataset):
         save_scaled(opt, fake_B, orig_A, data["A_paths"], scale)
 
     dataset.opt.serial_batches = False
+    dataset.opt.no_flip = False
+    dataset.opt.preprocess = preprocessing
 
 
 if __name__ == '__main__':

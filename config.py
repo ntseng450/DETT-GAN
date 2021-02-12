@@ -20,7 +20,7 @@ def load_args():
     arg_parser.add_argument('--direction', type=str, default='AtoB', help='AtoB or BtoA')
 
     # Scale params
-    arg_parser.add_argument('--model_types', type=str, default='coarse,medium,fine')
+    arg_parser.add_argument('--model_types', type=str, default='medium,medium,medium')
     arg_parser.add_argument('--combine_outputs', type=float, default=0.0)
     arg_parser.add_argument('--condition_original', action='store_true')
     arg_parser.add_argument('--latent_addition', type=float, default=0.0)

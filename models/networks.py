@@ -90,6 +90,8 @@ class ScaleDiscriminator(nn.Module):
 
             sequence += [nn.Conv2d(ndf * nf_mult, 1, kernel_size=3, stride=1, padding=padw)]  # output 1 channel prediction map
             self.model = nn.Sequential(*sequence)
+            # for layer_id, layer in enumerate(self.model):
+            #     print(layer_id, layer)
 
     def forward(self, input):
         """Standard forward."""
@@ -768,9 +770,6 @@ class ContentEncoder(nn.Module):
             return feat, feats
         else:
             return self.model(x), None
-
-        for layer_id, layer in enumerate(self.model):
-            print(layer_id, layer)
 
 
 class Decoder_all(nn.Module):

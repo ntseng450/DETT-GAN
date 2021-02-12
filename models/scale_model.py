@@ -52,7 +52,7 @@ class ScaleModel(BaseModel):
 
         if self.isTrain:
             if model_specs[scale_idx] == "coarse" or model_specs[scale_idx] == "medium":
-                self.netD = networks.define_D(opt.output_nc, 32, model_specs[scale_idx], opt.n_layers_D, opt.normD, 
+                self.netD = networks.define_D(opt.output_nc, opt.ndf, model_specs[scale_idx], 2, opt.normD,
                 opt.init_type, opt.init_gain, opt.no_antialias, self.gpu_ids, opt)
             else:
                 self.netD = networks.define_D(opt.output_nc, opt.ndf, opt.netD, opt.n_layers_D, opt.normD, opt.init_type, opt.init_gain, opt.no_antialias, self.gpu_ids, opt)

@@ -16,8 +16,8 @@ import math
 # n_layers=3
 # convnet =   [[4,1,1],[3,2,1],[4,1,1],[3,2,1],[4,1,1],[3,2,1],[4,1,1],[4,1,1]]
 # layer_names = ['conv1','pool1','conv2','pool2','conv3','conv4','conv5','pool5']
-convnet =   [[4,1,1],[3,2,1],[4,1,1],[3,2,1],[4,1,1],[4,1,1]]
-layer_names = ['conv1','pool1','conv3','conv4', 'conv5', 'pool7']
+convnet =   [[4,1,1],[3,2,1],[4,1,1],[3,2,1],[3,1,1],[3,1,1]]
+layer_names = ['conv1','pool1','conv2','pool2','conv5','pool5']
 imsize = 128
 
 def outFromIn(conv, layerIn):

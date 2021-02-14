@@ -82,13 +82,19 @@ class ScaleDiscriminator(nn.Module):
 
             nf_mult_prev = nf_mult
             nf_mult = min(2 ** n_layers, 8)
+            # sequence += [
+            #     nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult, kernel_size=3, stride=1, padding=padw, bias=use_bias),
+            #     norm_layer(ndf * nf_mult),
+            #     nn.LeakyReLU(0.2, True)
+            # ]
             sequence += [
-                nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult, kernel_size=3, stride=1, padding=padw, bias=use_bias),
+                nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult, kernel_size=4, stride=1, padding=padw, bias=use_bias),
                 norm_layer(ndf * nf_mult),
                 nn.LeakyReLU(0.2, True)
             ]
 
-            sequence += [nn.Conv2d(ndf * nf_mult, 1, kernel_size=3, stride=1, padding=padw)]  # output 1 channel prediction map
+            sequence += [nn.Conv2d(ndf * nf_mult, 1, kernel_size=4, stride=1, padding=padw)]
+            # sequence += [nn.Conv2d(ndf * nf_mult, 1, kernel_size=3, stride=1, padding=padw)]  # output 1 channel prediction map
             self.model = nn.Sequential(*sequence)
             # for layer_id, layer in enumerate(self.model):
             #     print(layer_id, layer)
